@@ -23,5 +23,5 @@ enum {
         TOK_SEP, // ;
 };
 
-void tokens_free(struct tokenlist *head);
+void toklist_free(struct tokenlist *head);
 struct tokenlist* tokenize(const char *str);

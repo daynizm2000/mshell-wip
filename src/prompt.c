@@ -58,29 +58,46 @@ static char* _get_home_path(void)
         return NULL;
 }
 
-static char *get_path(void)
+static char* get_path(void)
 {
         char *path = getcwd(NULL, 0);
         if (!path) return NULL;
 
-        size_t len_path = strlen(path);
-
         char *home_path = _get_home_path();
-        if (!home_path) return NULL;
-
-        size_t len_home_path = strlen(home_path);
-
-        if (len_path > len_home_path && strncmp(path, home_path, len_home_path) == 0) {
-                sprintf(path, "~/%s", path + len_home_path + 1);
+        if (!home_path) {
+                free(path);
+                return NULL;
         }
-        else if (len_path == len_home_path) {
+
+        size_t len_home = strlen(home_path);
+
+        if (strncmp(path, home_path, len_home) == 0 &&
+            (path[len_home] == '/' || path[len_home] == '\0')) {
+
+                if (path[len_home] == '\0') {
+                        free(path);
+                        free(home_path);
+                        return strdup("~");
+                }
+
+                char *suffix = path + len_home + 1;
+
+                size_t new_len = 1 + strlen(suffix) + 1; // "~" + "/" + suffix + '\0'
+                char *res = malloc(new_len);
+                if (!res) {
+                        free(path);
+                        free(home_path);
+                        return NULL;
+                }
+
+                sprintf(res, "~/%s", suffix);
+
                 free(path);
                 free(home_path);
-                return strdup("~");
+                return res;
         }
 
         free(home_path);
-        
         return path;
 }
 
@@ -108,7 +125,7 @@ int prompt_init(prompt_t *prompt)
 
 void prompt_print(prompt_t prompt)
 {
-        printf("%s@%s %s>", prompt.distr, prompt.uname, prompt.path);
+        printf("%s@%s %s> ", prompt.distr, prompt.uname, prompt.path);
 }
 
 void prompt_path_update(prompt_t *prompt)
