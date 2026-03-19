@@ -59,7 +59,7 @@ void jobs_free(struct joblist *head)
                 struct joblist *tmp = ptr;
 
                 pipelist_free(ptr->pipe);
-
+ 
                 ptr = ptr->next;
                 free(tmp);
         }
@@ -90,13 +90,14 @@ struct joblist* jobs_init(struct tokenlist *tok_head)
                 for (size_t i = 0; i < sizeof(job_sep) / sizeof(*job_sep); i++) {
                         if (ptr->type == job_sep[i]) {
                                 if (ptr->type == TOK_BACKGROUND) (*jptr)->flags |= JB_BACKGROUND;
-                                if (ptr->type == TOK_OR)         (*jptr)->flags |= JB_OR;
-                                if (ptr->type == TOK_AND)        (*jptr)->flags |= JB_AND;
 
                                 jptr = &(*jptr)->next;
 
                                 *jptr = calloc(1, sizeof(struct joblist));
                                 if (!*jptr) goto err_exit;
+
+                                if (ptr->type == TOK_OR)         (*jptr)->flags |= JB_OR;
+                                if (ptr->type == TOK_AND)        (*jptr)->flags |= JB_AND;
 
                                 (*cmd)->argv[(*cmd)->argc] = NULL;
 
