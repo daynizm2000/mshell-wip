@@ -36,6 +36,44 @@ void toklist_free(struct tokenlist *head)
         }
 }
 
+static void backslash_delete(char *str)
+{
+        if (!str) return;
+
+        char *src = str;
+        char *dst = str;
+
+        while (*src) {
+                if (*src == '\\' && *(src + 1) == '\\') {
+                        *dst++ = '\\';
+                        src += 2;
+                }
+                else if (*src == '\\' && *(src + 1)) {
+                        src++;
+                }
+                else {
+                        *dst++ = *src++;
+                }
+        }
+
+        *dst = '\0';
+}
+
+static void quotes_parse(const char *data, size_t *ccount, char quote)
+{
+        int escaped = 0;
+
+        while (data[*ccount]) {
+                if (!escaped && data[*ccount] == quote) {
+                        (*ccount)++;
+                        break;
+                }
+
+                escaped = (data[*ccount] == '\\' && !escaped);
+                (*ccount)++;
+        }
+}
+
 static size_t toklist_fill(struct tokenlist *token, const char *data)
 {
         for (size_t i = 0; i < sizeof(_tokens_fmt) / sizeof(*_tokens_fmt); i++) {
@@ -50,11 +88,11 @@ static size_t toklist_fill(struct tokenlist *token, const char *data)
 
         size_t ccount = 0;
 
-        if (data[0] == '\"') {
+        if (data[0] == '"' || data[0] == '\'') {
                 ccount = 1;
 
-                while (data[ccount] && data[ccount] != '\"') ccount++;
-                if (data[ccount] == '\"') ccount++;
+                if (data[0] == '"')     quotes_parse(data, &ccount, '"');
+                else                    quotes_parse(data, &ccount, '\'');
 
                 token->data = strndup(data + 1, ccount - 2);
         }
@@ -62,6 +100,8 @@ static size_t toklist_fill(struct tokenlist *token, const char *data)
                 while (data[ccount] && !isspace(data[ccount])) ccount++;
                 token->data = strndup(data, ccount);
         }
+
+        backslash_delete(token->data);
 
         token->type = TOK_WORD;
         token->is_free = 1;
