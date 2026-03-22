@@ -4,6 +4,26 @@
 #include <string.h>
 #include <pwd.h>
 #include <unistd.h>
+#include <ctype.h>
+
+static void delete_spaces(char *str)
+{
+        if (!str) return;
+
+        char *src  = str;
+        char *dest = str;
+
+        while (*src) {
+                if (isspace(*src)) {
+                        src++;
+                }
+                else {
+                        *dest++ = *src++;
+                }
+        }
+
+        *dest = '\0';
+}
 
 static char *get_distr(void)
 {
@@ -21,7 +41,10 @@ static char *get_distr(void)
 
                         ptr[j] = '\0';
 
-                        return strdup(ptr);
+                        char *res = strdup(ptr);
+                        delete_spaces(res);
+                        
+                        return res;
                 }
         }
 
