@@ -1,4 +1,4 @@
-# 🐚 mshell — minimal Unix shell
+# mshell — minimal Unix shell
 
 mshell is a custom minimal Unix shell written in C for educational purposes. It implements basic Unix shell functionality including pipelines, redirections, logical operators, and simple job execution.
 
